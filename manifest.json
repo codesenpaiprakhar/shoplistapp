@@ -1,0 +1,18 @@
+{
+  "name": "ShopList - Grocery Planner",
+  "short_name": "ShopList",
+  "description": "Smart Grocery Planner by Shop Type & Price Tracker",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

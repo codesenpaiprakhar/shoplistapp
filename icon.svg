@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22c55e" />
+      <stop offset="100%" stop-color="#15803d" />
+    </linearGradient>
+  </defs>
+  <!-- App Background -->
+  <rect width="512" height="512" rx="115" fill="url(#brandGrad)" />
+  <!-- Shopping Bag Icon -->
+  <path d="M140 180 L372 180 L350 400 C348 412 338 420 326 420 L186 420 C174 420 164 412 162 400 Z" fill="white" opacity="0.95" />
+  <!-- Bag Handle -->
+  <path d="M200 180 L200 135 C200 105 225 80 256 80 C287 80 312 105 312 135 L312 180" fill="none" stroke="white" stroke-width="32" stroke-linecap="round" />
+  <!-- Checkmark on bag -->
+  <path d="M225 295 L248 318 L295 265" fill="none" stroke="#16a34a" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
