@@ -1,8 +1,10 @@
-const CACHE_NAME = 'shoplist-cache-v1';
+const CACHE_NAME = 'shoplist-cache-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
   './icon.svg'
 ];
 
