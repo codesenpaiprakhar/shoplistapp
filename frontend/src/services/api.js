@@ -53,5 +53,34 @@ export const api = {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to clear purchased items');
+  },
+
+  // Price Catalog APIs
+  async getPrices(categoryId = null, search = '') {
+    let url = `${API_BASE_URL}/prices`;
+    const params = new URLSearchParams();
+    if (categoryId) params.append('categoryId', categoryId);
+    if (search) params.append('search', search);
+    if (params.toString()) url += `?${params.toString()}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch prices');
+    return res.json();
+  },
+
+  async addPrice(priceData) {
+    const res = await fetch(`${API_BASE_URL}/prices`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(priceData),
+    });
+    if (!res.ok) throw new Error('Failed to add price');
+    return res.json();
+  },
+
+  async deletePrice(priceId) {
+    const res = await fetch(`${API_BASE_URL}/prices/${priceId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete price');
   }
 };

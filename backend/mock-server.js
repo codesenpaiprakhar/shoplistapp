@@ -30,7 +30,15 @@ let listItems = [
   { id: 8, listId: 1, itemName: 'Whole Wheat Bread', category: categories[4], plannedQuantity: 1, unit: 'packet', status: 'PENDING', estimatedPrice: 45, notes: 'Fresh bake' }
 ];
 
+let prices = [
+  { id: 101, itemName: 'Fresh Tomatoes', category: categories[0], price: 30, unit: 'kg', shopName: 'Mandi Stall #4', notes: 'Best price on Sunday', updatedAt: '2026-11-01' },
+  { id: 102, itemName: 'Onions', category: categories[0], price: 30, unit: 'kg', shopName: 'Vegetable Corner', notes: 'Wholesale 5kg bag', updatedAt: '2026-11-02' },
+  { id: 103, itemName: 'Full Cream Milk', category: categories[1], price: 65, unit: 'litre', shopName: 'Mother Dairy', notes: 'Packet price', updatedAt: '2026-11-04' },
+  { id: 104, itemName: 'Basmati Rice', category: categories[2], price: 90, unit: 'kg', shopName: 'Kirana Superstore', notes: 'Royal Rozana', updatedAt: '2026-10-25' }
+];
+
 let nextItemId = 9;
+let nextPriceId = 105;
 
 function setCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -54,6 +62,61 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET' && pathname === '/api/categories') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(categories));
+    return;
+  }
+
+  // GET /api/prices
+  if (req.method === 'GET' && pathname === '/api/prices') {
+    const categoryId = url.searchParams.get('categoryId');
+    const search = url.searchParams.get('search');
+    let filtered = prices;
+    if (categoryId) {
+      filtered = filtered.filter(p => p.category && p.category.id == categoryId);
+    }
+    if (search) {
+      filtered = filtered.filter(p => p.itemName.toLowerCase().includes(search.toLowerCase()));
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(filtered));
+    return;
+  }
+
+  // POST /api/prices
+  if (req.method === 'POST' && pathname === '/api/prices') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body);
+        const category = categories.find(c => c.id == (payload.category?.id || payload.categoryId)) || categories[0];
+        const newPrice = {
+          id: nextPriceId++,
+          itemName: payload.itemName,
+          category: category,
+          price: Number(payload.price) || 0,
+          unit: payload.unit || 'kg',
+          shopName: payload.shopName || '',
+          notes: payload.notes || '',
+          updatedAt: new Date().toISOString().split('T')[0]
+        };
+        prices.push(newPrice);
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(newPrice));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // DELETE /api/prices/:id
+  const deletePriceMatch = pathname.match(/^\/api\/prices\/(\d+)$/);
+  if (req.method === 'DELETE' && deletePriceMatch) {
+    const priceId = Number(deletePriceMatch[1]);
+    prices = prices.filter(p => p.id !== priceId);
+    res.writeHead(204);
+    res.end();
     return;
   }
 
@@ -168,10 +231,8 @@ server.listen(PORT, () => {
   console.log(`[ShopList API Mock Server] running on http://localhost:${PORT}`);
   console.log(`Endpoints available:`);
   console.log(`- GET  /api/categories`);
+  console.log(`- GET  /api/prices`);
+  console.log(`- POST /api/prices`);
   console.log(`- GET  /api/shopping-lists/active`);
   console.log(`- GET  /api/shopping-lists/1/items`);
-  console.log(`- POST /api/shopping-lists/1/items`);
-  console.log(`- PATCH /api/shopping-lists/items/:id/status`);
-  console.log(`- DELETE /api/shopping-lists/items/:id`);
-  console.log(`- DELETE /api/shopping-lists/1/clear-purchased`);
 });

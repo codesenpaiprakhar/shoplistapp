@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ShopList | Market Shopping by Shop Type</title>
+  <title>ShopList | Market Shopping &amp; Price Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -28,15 +28,14 @@
     }
   </script>
   <style>
-    /* Smooth transitions and mobile tap highlight removal */
     * { -webkit-tap-highlight-color: transparent; }
-    .fade-enter { opacity: 0; transform: translateY(6px); }
-    .fade-enter-active { opacity: 1; transform: translateY(0); transition: all 200ms ease; }
     .item-checkbox {
       width: 26px;
       height: 26px;
       border-radius: 8px;
     }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased pb-24 sm:pb-12">
@@ -55,19 +54,42 @@
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Local &amp; API Ready
             </span>
           </div>
-          <p class="text-xs text-slate-500">Grouped by shop category for easy market runs</p>
+          <p class="text-xs text-slate-500">Grouped by shop type &amp; item price catalog</p>
         </div>
       </div>
 
-      <!-- SHOPPING MODE TOGGLE BUTTON -->
+      <!-- SHOPPING MODE TOGGLE BUTTON (VISIBLE ON LIST TAB) -->
       <button id="toggle-shopping-mode-btn" onclick="toggleShoppingMode()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 shadow-sm">
         <i data-lucide="check-check" class="w-4 h-4"></i>
         <span id="shopping-mode-label">Shopping Mode</span>
       </button>
     </div>
 
-    <!-- PROGRESS BAR IN HEADER -->
-    <div id="progress-container" class="max-w-3xl mx-auto px-4 pb-2.5 pt-0.5">
+    <!-- MAIN NAVIGATION TABS -->
+    <nav class="bg-white border-t border-slate-100 px-4">
+      <div class="max-w-3xl mx-auto flex items-center gap-2">
+        <button 
+          id="nav-tab-list" 
+          onclick="switchTab('list')" 
+          class="flex items-center gap-2 py-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 border-brand-600 text-brand-700 transition">
+          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+          <span>Market Checklist</span>
+          <span id="nav-list-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-brand-100 text-brand-800 font-semibold">0</span>
+        </button>
+
+        <button 
+          id="nav-tab-prices" 
+          onclick="switchTab('prices')" 
+          class="flex items-center gap-2 py-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition">
+          <i data-lucide="tag" class="w-4 h-4"></i>
+          <span>Price Tracker &amp; Catalog</span>
+          <span id="nav-price-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-semibold">0</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- PROGRESS BAR (SHOPPING LIST VIEW ONLY) -->
+    <div id="progress-container" class="max-w-3xl mx-auto px-4 pb-2.5 pt-1.5">
       <div class="flex justify-between items-center text-xs text-slate-500 mb-1">
         <span id="progress-text" class="font-medium">0 of 0 items purchased</span>
         <span id="progress-spend" class="font-semibold text-slate-700">Est. Total: ₹0</span>
@@ -78,10 +100,9 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT CONTAINER -->
-  <main class="max-w-3xl mx-auto w-full px-4 pt-4 flex-1">
-
-    <!-- SEARCH & ACTION BAR -->
+  <!-- ==================== VIEW 1: SHOPPING LIST ==================== -->
+  <main id="view-shopping-list" class="max-w-3xl mx-auto w-full px-4 pt-4 flex-1">
+    <!-- Search & Add Item Bar -->
     <div class="flex items-center gap-2 mb-3">
       <div class="relative flex-1">
         <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
@@ -89,7 +110,7 @@
           type="text" 
           id="search-input" 
           oninput="onSearchChange(this.value)" 
-          placeholder="Search items (e.g. Milk, Onions, Bread)..." 
+          placeholder="Search items to buy (e.g. Milk, Onions, Bread)..." 
           class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 shadow-sm"
         />
       </div>
@@ -102,7 +123,7 @@
       </button>
     </div>
 
-    <!-- SHOP TYPE HORIZONTAL CHIPS SCROLLER -->
+    <!-- Shop Category Horizontal Filter Chips -->
     <div class="flex items-center gap-1.5 overflow-x-auto pb-2.5 mb-3 no-scrollbar scroll-smooth">
       <button 
         onclick="selectCategoryFilter(null)" 
@@ -111,44 +132,124 @@
         <span>🏪</span> All Shops
       </button>
       <div id="category-chips-list" class="flex items-center gap-1.5">
-        <!-- Generated dynamically -->
+        <!-- Dynamically injected -->
       </div>
     </div>
 
-    <!-- SHOPPING LIST CONTENT (GROUPED BY SHOP TYPE) -->
+    <!-- Grouped Shopping List -->
     <div id="shopping-list-container" class="space-y-4">
-      <!-- Generated dynamically -->
+      <!-- Dynamically injected -->
     </div>
 
-    <!-- EMPTY STATE -->
+    <!-- Empty State -->
     <div id="empty-state" class="hidden text-center py-12 px-4 bg-white rounded-2xl border border-dashed border-slate-200 my-4">
       <div class="w-14 h-14 mx-auto rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-3">
         <i data-lucide="shopping-basket" class="w-7 h-7"></i>
       </div>
       <h3 class="font-semibold text-slate-800 text-base">Your shopping list is clear!</h3>
-      <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1 mb-4">No items remaining in this category. Add what you need to buy for your next market run.</p>
+      <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1 mb-4">No items remaining in this category. Add what you need for your market trip.</p>
       <button onclick="openAddItemModal()" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 transition">
-        + Add First Item
+        + Add Item
       </button>
     </div>
 
-    <!-- BOTTOM ACTION BAR FOR COMPLETED ITEMS -->
+    <!-- Bottom Clear Bar -->
     <div id="bottom-clear-bar" class="hidden mt-6 mb-2 flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-      <span id="purchased-summary-text" class="text-xs text-slate-600 font-medium">3 purchased items</span>
+      <span id="purchased-summary-text" class="text-xs text-slate-600 font-medium">0 items purchased</span>
       <button onclick="clearPurchased()" class="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 py-1 px-2.5 rounded-lg hover:bg-rose-50 transition">
         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear Done Items
       </button>
     </div>
-
   </main>
 
-  <!-- ADD ITEM MODAL / SHEET -->
-  <div id="add-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+  <!-- ==================== VIEW 2: PRICE TRACKER & CATALOG ==================== -->
+  <main id="view-price-tracker" class="max-w-3xl mx-auto w-full px-4 pt-4 flex-1 hidden">
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-emerald-800 to-brand-700 rounded-2xl p-4 text-white shadow-md mb-4 flex items-center justify-between">
+      <div>
+        <h2 class="text-base sm:text-lg font-bold flex items-center gap-2">
+          <span>🏷️</span> Price Reference &amp; Rate Tracker
+        </h2>
+        <p class="text-xs text-emerald-100 mt-0.5">
+          Track item prices per stall to compare rates and auto-fill your shopping budget.
+        </p>
+      </div>
+      <button 
+        onclick="openPriceModal()" 
+        class="shrink-0 flex items-center gap-1 px-3 py-2 bg-white text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold shadow-sm transition active:scale-95">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span>Add Price</span>
+      </button>
+    </div>
+
+    <!-- Price Stat Highlights -->
+    <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[11px] text-slate-500 font-medium block">Tracked Items</span>
+        <span id="stat-price-count" class="text-base sm:text-lg font-extrabold text-slate-900">0</span>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[11px] text-slate-500 font-medium block">Avg. Item Rate</span>
+        <span id="stat-price-avg" class="text-base sm:text-lg font-extrabold text-brand-700">₹0</span>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[11px] text-slate-500 font-medium block">Price Range</span>
+        <span id="stat-price-range" class="text-xs sm:text-sm font-bold text-slate-800">₹0 - ₹0</span>
+      </div>
+    </div>
+
+    <!-- Price Search & Category Filter -->
+    <div class="flex items-center gap-2 mb-3">
+      <div class="relative flex-1">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+        <input 
+          type="text" 
+          id="price-search-input" 
+          oninput="onPriceSearchChange(this.value)" 
+          placeholder="Search price catalog (e.g. Tomatoes, Milk, Oil, Bread)..." 
+          class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 shadow-sm"
+        />
+      </div>
+    </div>
+
+    <!-- Shop Categories for Price Filter -->
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-2.5 mb-3 no-scrollbar scroll-smooth">
+      <button 
+        onclick="selectPriceCategoryFilter(null)" 
+        id="price-cat-chip-all" 
+        class="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white shadow-sm flex items-center gap-1.5 transition">
+        <span>🏪</span> All Shops
+      </button>
+      <div id="price-category-chips-list" class="flex items-center gap-1.5">
+        <!-- Dynamically injected -->
+      </div>
+    </div>
+
+    <!-- Price Items Catalog Cards -->
+    <div id="price-catalog-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <!-- Dynamically injected -->
+    </div>
+
+    <!-- Price Catalog Empty State -->
+    <div id="price-empty-state" class="hidden text-center py-12 px-4 bg-white rounded-2xl border border-dashed border-slate-200 my-4">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-3">
+        <i data-lucide="tag" class="w-7 h-7"></i>
+      </div>
+      <h3 class="font-semibold text-slate-800 text-base">No price records found</h3>
+      <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1 mb-4">Start recording market prices to easily reference what things cost.</p>
+      <button onclick="openPriceModal()" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 transition">
+        + Record First Item Price
+      </button>
+    </div>
+  </main>
+
+  <!-- ==================== MODAL 1: ADD ITEM TO SHOPPING LIST ==================== -->
+  <div id="add-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
         <div>
-          <h2 class="text-lg font-bold text-slate-900">Add Grocery Item</h2>
-          <p class="text-xs text-slate-500">Pick which shop you'll buy this from</p>
+          <h2 class="text-lg font-bold text-slate-900">Add Item to Buy</h2>
+          <p class="text-xs text-slate-500">Pick which stall you will buy this from</p>
         </div>
         <button onclick="closeAddItemModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
           <i data-lucide="x" class="w-4 h-4"></i>
@@ -156,27 +257,30 @@
       </div>
 
       <form id="add-item-form" onsubmit="handleAddItemSubmit(event)" class="mt-4 space-y-4">
-        <!-- Item Name -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Item Name *</label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-slate-700">Item Name *</label>
+            <span id="price-lookup-hint" class="text-[11px] text-emerald-600 font-medium hidden flex items-center gap-1">
+              <i data-lucide="sparkles" class="w-3 h-3"></i> Price autofilled
+            </span>
+          </div>
           <input 
             type="text" 
             id="modal-item-name" 
             required 
-            placeholder="e.g. Fresh Tomatoes, Paneer, Atta" 
-            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            oninput="checkPriceCatalogForAutofill(this.value)"
+            placeholder="e.g. Tomatoes, Full Cream Milk, Basmati Rice" 
+            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
-        <!-- Shop Category Picker -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Buy From Which Shop? *</label>
           <div id="modal-category-radios" class="grid grid-cols-2 gap-2 text-xs">
-            <!-- Injected dynamically -->
+            <!-- Dynamically injected -->
           </div>
         </div>
 
-        <!-- Quantity & Unit -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Quantity *</label>
@@ -187,14 +291,14 @@
               required 
               value="1" 
               min="0.1" 
-              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Unit</label>
             <select 
               id="modal-unit" 
-              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
               <option value="kg">kg (Kilograms)</option>
               <option value="g">g (Grams)</option>
               <option value="litre">litre (L)</option>
@@ -202,21 +306,20 @@
               <option value="packet">packet / pouch</option>
               <option value="piece">piece (pc)</option>
               <option value="dozen">dozen</option>
-              <option value="bunch">bunch (greens)</option>
+              <option value="bunch">bunch</option>
             </select>
           </div>
         </div>
 
-        <!-- Estimated Price & Note -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Estimated Price (₹)</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Estimated Total Price (₹)</label>
             <input 
               type="number" 
               step="any" 
               id="modal-price" 
               placeholder="e.g. 60" 
-              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -225,12 +328,11 @@
               type="text" 
               id="modal-notes" 
               placeholder="e.g. Firm and ripe" 
-              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
 
-        <!-- Submit Button -->
         <div class="pt-2">
           <button 
             type="submit" 
@@ -242,17 +344,115 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL 2: ADD / EDIT PRICE IN CATALOG ==================== -->
+  <div id="price-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h2 id="price-modal-title" class="text-lg font-bold text-slate-900">Record Item Price</h2>
+          <p class="text-xs text-slate-500">Save standard price for market comparison</p>
+        </div>
+        <button onclick="closePriceModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="price-record-form" onsubmit="handlePriceSubmit(event)" class="mt-4 space-y-4">
+        <input type="hidden" id="price-edit-id" value="">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Item Name *</label>
+          <input 
+            type="text" 
+            id="price-modal-item-name" 
+            required 
+            placeholder="e.g. Fresh Tomatoes, Basmati Rice, Mustard Oil" 
+            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Shop Category *</label>
+          <div id="price-modal-category-radios" class="grid grid-cols-2 gap-2 text-xs">
+            <!-- Dynamically injected -->
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Price (₹) *</label>
+            <input 
+              type="number" 
+              step="any" 
+              id="price-modal-price" 
+              required 
+              min="0.1" 
+              placeholder="e.g. 60" 
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Per Unit *</label>
+            <select 
+              id="price-modal-unit" 
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+              <option value="kg">per kg</option>
+              <option value="g">per 500g</option>
+              <option value="litre">per litre</option>
+              <option value="ml">per 500ml</option>
+              <option value="packet">per packet</option>
+              <option value="piece">per piece</option>
+              <option value="dozen">per dozen</option>
+              <option value="bunch">per bunch</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Shop / Stall Name</label>
+            <input 
+              type="text" 
+              id="price-modal-shop-name" 
+              placeholder="e.g. Stall 4, Mother Dairy" 
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Price Notes / Brand</label>
+            <input 
+              type="text" 
+              id="price-modal-notes" 
+              placeholder="e.g. Royal brand, Wholesale rate" 
+              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button 
+            type="submit" 
+            id="price-submit-btn"
+            class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-bold shadow-md shadow-brand-600/25 active:scale-[0.99] transition">
+            Save Item Price
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- FLOATING BOTTOM ADD BUTTON (MOBILE ONLY) -->
   <div class="sm:hidden fixed bottom-5 right-5 z-30">
     <button 
-      onclick="openAddItemModal()" 
+      id="floating-action-btn"
+      onclick="handleFloatingAdd()" 
       class="w-14 h-14 rounded-full bg-brand-600 text-white shadow-lg shadow-brand-600/40 flex items-center justify-center active:scale-95 transition">
       <i data-lucide="plus" class="w-6 h-6"></i>
     </button>
   </div>
 
   <script>
-    // --- DEFAULT CATEGORIES WITH ICONS & EMOJIS ---
+    // --- DEFAULT CATEGORIES ---
     const DEFAULT_CATEGORIES = [
       { id: 1, name: 'Vegetable Shop', emoji: '🥦', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
       { id: 2, name: 'Dairy & Milk Booth', emoji: '🥛', color: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -263,7 +463,7 @@
       { id: 7, name: 'Chemist & Personal Care', emoji: '💊', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' }
     ];
 
-    // --- INITIAL SAMPLE ITEMS ---
+    // --- INITIAL SHOPPING ITEMS ---
     const INITIAL_ITEMS = [
       { id: 1, itemName: 'Fresh Tomatoes', categoryId: 1, plannedQuantity: 2, unit: 'kg', status: 'PENDING', estimatedPrice: 60, notes: 'Firm and red' },
       { id: 2, itemName: 'Onions', categoryId: 1, plannedQuantity: 3, unit: 'kg', status: 'PENDING', estimatedPrice: 90, notes: 'Medium sized' },
@@ -274,73 +474,416 @@
       { id: 7, itemName: 'Toor Dal', categoryId: 3, plannedQuantity: 1, unit: 'kg', status: 'PENDING', estimatedPrice: 160, notes: 'Yellow dal' },
       { id: 8, itemName: 'Sunflower Oil', categoryId: 3, plannedQuantity: 2, unit: 'litre', status: 'PENDING', estimatedPrice: 280, notes: 'Cooking oil' },
       { id: 9, itemName: 'Bananas', categoryId: 4, plannedQuantity: 1, unit: 'dozen', status: 'PENDING', estimatedPrice: 60, notes: 'Ripe' },
-      { id: 10, itemName: 'Apples', categoryId: 4, plannedQuantity: 1, unit: 'kg', status: 'PENDING', estimatedPrice: 180, notes: 'Crisp Shimla apples' },
+      { id: 10, itemName: 'Apples', categoryId: 4, plannedQuantity: 1, unit: 'kg', status: 'PENDING', estimatedPrice: 180, notes: 'Crisp apples' },
       { id: 11, itemName: 'Whole Wheat Bread', categoryId: 5, plannedQuantity: 1, unit: 'packet', status: 'PENDING', estimatedPrice: 45, notes: 'Brown bread' }
     ];
 
-    // --- STATE ---
+    // --- INITIAL PRICE TRACKER CATALOG ---
+    const INITIAL_PRICES = [
+      { id: 101, itemName: 'Fresh Tomatoes', categoryId: 1, price: 30, unit: 'kg', shopName: 'Mandi Stall #4', notes: 'Best price on Sunday', updatedAt: '2026-11-01' },
+      { id: 102, itemName: 'Onions', categoryId: 1, price: 30, unit: 'kg', shopName: 'Vegetable Corner', notes: 'Wholesale 5kg bag', updatedAt: '2026-11-02' },
+      { id: 103, itemName: 'Potatoes', categoryId: 1, price: 25, unit: 'kg', shopName: 'Mandi Stall #4', notes: 'Pahari variety', updatedAt: '2026-11-01' },
+      { id: 104, itemName: 'Spinach (Palak)', categoryId: 1, price: 25, unit: 'bunch', shopName: 'Local Vendor', notes: 'Fresh greens', updatedAt: '2026-11-03' },
+      { id: 105, itemName: 'Full Cream Milk', categoryId: 2, price: 65, unit: 'litre', shopName: 'Mother Dairy', notes: 'Packet price', updatedAt: '2026-11-04' },
+      { id: 106, itemName: 'Fresh Paneer', categoryId: 2, price: 400, unit: 'kg', shopName: 'Dairy Booth', notes: 'Loose fresh', updatedAt: '2026-10-30' },
+      { id: 107, itemName: 'Basmati Rice', categoryId: 3, price: 90, unit: 'kg', shopName: 'Kirana Superstore', notes: 'Royal Rozana', updatedAt: '2026-10-25' },
+      { id: 108, itemName: 'Toor Dal', categoryId: 3, price: 160, unit: 'kg', shopName: 'Wholesale Kirana', notes: 'Unpolished', updatedAt: '2026-10-28' },
+      { id: 109, itemName: 'Sunflower Oil', categoryId: 3, price: 140, unit: 'litre', shopName: 'Grocery Store', notes: 'Fortune pouch', updatedAt: '2026-10-29' },
+      { id: 110, itemName: 'Bananas', categoryId: 4, price: 60, unit: 'dozen', shopName: 'Fruit Cart', notes: 'Robusta', updatedAt: '2026-11-02' },
+      { id: 111, itemName: 'Apples', categoryId: 4, price: 180, unit: 'kg', shopName: 'Fruit Stall', notes: 'Kinnaur apples', updatedAt: '2026-11-03' },
+      { id: 112, itemName: 'Whole Wheat Bread', categoryId: 5, price: 45, unit: 'packet', shopName: 'Corner Bakery', notes: 'Standard 400g', updatedAt: '2026-11-04' }
+    ];
+
+    // --- APPLICATION STATE ---
+    let currentTab = 'list'; // 'list' or 'prices'
     let categories = DEFAULT_CATEGORIES;
     let items = [];
-    let selectedCategoryId = null; // null means 'All'
+    let priceCatalog = [];
+    let selectedCategoryId = null; // Shopping list filter
+    let selectedPriceCategoryId = null; // Price catalog filter
     let searchQuery = '';
+    let priceSearchQuery = '';
     let isShoppingMode = false;
     let backendUrl = 'http://localhost:8080/api';
 
-    // --- LOCAL STORAGE KEY ---
-    const STORAGE_KEY = 'shoplist_app_state_v1';
+    const STORAGE_KEY_ITEMS = 'shoplist_app_state_v2';
+    const STORAGE_KEY_PRICES = 'shoplist_price_catalog_v2';
 
     function loadState() {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
+        const savedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+        if (savedItems) {
+          const parsed = JSON.parse(savedItems);
           items = parsed.items || INITIAL_ITEMS;
           categories = parsed.categories || DEFAULT_CATEGORIES;
         } else {
           items = INITIAL_ITEMS;
-          saveState();
+        }
+
+        const savedPrices = localStorage.getItem(STORAGE_KEY_PRICES);
+        if (savedPrices) {
+          priceCatalog = JSON.parse(savedPrices);
+        } else {
+          priceCatalog = INITIAL_PRICES;
         }
       } catch (e) {
         items = INITIAL_ITEMS;
+        priceCatalog = INITIAL_PRICES;
       }
+      saveState();
     }
 
     function saveState() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, categories }));
+        localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify({ items, categories }));
+        localStorage.setItem(STORAGE_KEY_PRICES, JSON.stringify(priceCatalog));
       } catch (e) {
-        console.error('Failed to save to local storage', e);
+        console.error('Failed to save state', e);
       }
     }
 
-    // Attempt connecting to Spring Boot / Mock Backend
-    async function trySyncWithBackend() {
-      try {
-        const catRes = await fetch(`${backendUrl}/categories`, { signal: AbortSignal.timeout(1500) });
-        if (catRes.ok) {
-          const backendCats = await catRes.json();
-          if (backendCats && backendCats.length > 0) {
-            categories = backendCats.map(bc => {
-              const matched = DEFAULT_CATEGORIES.find(d => d.id === bc.id);
-              return {
-                id: bc.id,
-                name: bc.name,
-                emoji: matched ? matched.emoji : '🏬',
-                color: matched ? matched.color : 'bg-slate-50 text-slate-700 border-slate-200'
-              };
-            });
-          }
-          document.getElementById('api-status-pill').innerHTML = 
-            '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Spring Boot API Connected';
-          document.getElementById('api-status-pill').className = 
-            'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1';
+    // --- TAB SWITCHING ---
+    function switchTab(tab) {
+      currentTab = tab;
+      const listTabBtn = document.getElementById('nav-tab-list');
+      const pricesTabBtn = document.getElementById('nav-tab-prices');
+      const listView = document.getElementById('view-shopping-list');
+      const pricesView = document.getElementById('view-price-tracker');
+      const progressContainer = document.getElementById('progress-container');
+      const shoppingModeBtn = document.getElementById('toggle-shopping-mode-btn');
+
+      if (tab === 'list') {
+        listTabBtn.className = 'flex items-center gap-2 py-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 border-brand-600 text-brand-700 transition';
+        pricesTabBtn.className = 'flex items-center gap-2 py-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition';
+        listView.classList.remove('hidden');
+        pricesView.classList.add('hidden');
+        progressContainer.classList.remove('hidden');
+        shoppingModeBtn.classList.remove('hidden');
+        renderList();
+      } else {
+        pricesTabBtn.className = 'flex items-center gap-2 py-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 border-brand-600 text-brand-700 transition';
+        listTabBtn.className = 'flex items-center gap-2 py-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition';
+        listView.classList.add('hidden');
+        pricesView.classList.remove('hidden');
+        progressContainer.classList.add('hidden');
+        shoppingModeBtn.classList.add('hidden');
+        renderPriceCatalog();
+      }
+      updateBadges();
+      lucide.createIcons();
+    }
+
+    function updateBadges() {
+      const pendingCount = items.filter(i => i.status === 'PENDING').length;
+      document.getElementById('nav-list-badge').textContent = pendingCount;
+      document.getElementById('nav-price-badge').textContent = priceCatalog.length;
+    }
+
+    function handleFloatingAdd() {
+      if (currentTab === 'list') {
+        openAddItemModal();
+      } else {
+        openPriceModal();
+      }
+    }
+
+    // --- PRICE TRACKER LOGIC ---
+    function renderPriceCategoryChips() {
+      const container = document.getElementById('price-category-chips-list');
+      container.innerHTML = categories.map(cat => {
+        const isSelected = selectedPriceCategoryId === cat.id;
+        const count = priceCatalog.filter(p => p.categoryId === cat.id).length;
+        return `
+          <button 
+            onclick="selectPriceCategoryFilter(${cat.id})" 
+            class="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition ${
+              isSelected 
+                ? 'bg-brand-700 text-white border-brand-700 shadow-sm' 
+                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+            }">
+            <span>${cat.emoji}</span>
+            <span>${cat.name}</span>
+            ${count > 0 ? `<span class="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] ${isSelected ? 'bg-brand-900 text-emerald-200' : 'bg-slate-100 text-slate-600'}">${count}</span>` : ''}
+          </button>
+        `;
+      }).join('');
+
+      const allBtn = document.getElementById('price-cat-chip-all');
+      if (selectedPriceCategoryId === null) {
+        allBtn.className = 'whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white shadow-sm flex items-center gap-1.5 transition';
+      } else {
+        allBtn.className = 'whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5 transition';
+      }
+    }
+
+    function selectPriceCategoryFilter(catId) {
+      selectedPriceCategoryId = catId;
+      renderPriceCatalog();
+    }
+
+    function onPriceSearchChange(val) {
+      priceSearchQuery = val;
+      renderPriceCatalog();
+    }
+
+    function renderPriceCatalog() {
+      renderPriceCategoryChips();
+      const container = document.getElementById('price-catalog-container');
+      const emptyState = document.getElementById('price-empty-state');
+
+      let filtered = priceCatalog;
+      if (selectedPriceCategoryId !== null) {
+        filtered = filtered.filter(p => p.categoryId === selectedPriceCategoryId);
+      }
+      if (priceSearchQuery.trim() !== '') {
+        const q = priceSearchQuery.toLowerCase();
+        filtered = filtered.filter(p => 
+          p.itemName.toLowerCase().includes(q) || 
+          (p.shopName && p.shopName.toLowerCase().includes(q)) ||
+          (p.notes && p.notes.toLowerCase().includes(q))
+        );
+      }
+
+      // Update statistics
+      const totalPrices = priceCatalog.length;
+      document.getElementById('stat-price-count').textContent = totalPrices;
+      if (totalPrices > 0) {
+        const pricesArr = priceCatalog.map(p => Number(p.price) || 0);
+        const avg = Math.round(pricesArr.reduce((a, b) => a + b, 0) / totalPrices);
+        const min = Math.min(...pricesArr);
+        const max = Math.max(...pricesArr);
+        document.getElementById('stat-price-avg').textContent = `₹${avg}`;
+        document.getElementById('stat-price-range').textContent = `₹${min} - ₹${max}`;
+      } else {
+        document.getElementById('stat-price-avg').textContent = '₹0';
+        document.getElementById('stat-price-range').textContent = '₹0 - ₹0';
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      container.innerHTML = filtered.map(item => {
+        const cat = categories.find(c => c.id === item.categoryId) || categories[0];
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm hover:shadow transition-shadow flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${cat.color || 'bg-slate-100 text-slate-700'} mb-1.5">
+                    <span>${cat.emoji}</span> ${cat.name}
+                  </span>
+                  <h4 class="font-bold text-slate-900 text-base leading-tight">${escapeHtml(item.itemName)}</h4>
+                </div>
+                <div class="text-right">
+                  <div class="text-lg font-extrabold text-brand-700">₹${item.price}</div>
+                  <div class="text-[11px] text-slate-400 font-medium">/${item.unit}</div>
+                </div>
+              </div>
+
+              ${item.shopName ? `
+                <div class="flex items-center gap-1.5 mt-2 text-xs text-slate-600 font-medium">
+                  <i data-lucide="store" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                  <span class="truncate">${escapeHtml(item.shopName)}</span>
+                </div>
+              ` : ''}
+
+              ${item.notes ? `
+                <p class="text-xs text-slate-500 mt-1 italic line-clamp-2">"${escapeHtml(item.notes)}"</p>
+              ` : ''}
+            </div>
+
+            <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-[10px] text-slate-400">
+                ${item.updatedAt ? `Updated ${item.updatedAt}` : 'Saved'}
+              </span>
+
+              <div class="flex items-center gap-1.5">
+                <button 
+                  onclick="addPriceItemToShoppingList(${item.id})" 
+                  title="Add to current shopping list" 
+                  class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-brand-50 hover:bg-brand-100 text-brand-700 transition">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Buy</span>
+                </button>
+                <button 
+                  onclick="editPriceModal(${item.id})" 
+                  title="Edit price" 
+                  class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                </button>
+                <button 
+                  onclick="deletePriceItem(${item.id})" 
+                  title="Delete record" 
+                  class="p-1 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function addPriceItemToShoppingList(priceId) {
+      const priceItem = priceCatalog.find(p => p.id === priceId);
+      if (!priceItem) return;
+
+      const newItem = {
+        id: Date.now(),
+        itemName: priceItem.itemName,
+        categoryId: priceItem.categoryId,
+        plannedQuantity: 1,
+        unit: priceItem.unit,
+        status: 'PENDING',
+        estimatedPrice: priceItem.price,
+        notes: priceItem.shopName ? `Buy at: ${priceItem.shopName}` : ''
+      };
+
+      items.unshift(newItem);
+      saveState();
+      updateBadges();
+
+      // Show temporary toast or feedback
+      alert(`"${priceItem.itemName}" (₹${priceItem.price}/${priceItem.unit}) added to your Market Checklist!`);
+    }
+
+    function openPriceModal(editItem = null) {
+      renderPriceModalCategories();
+      const modal = document.getElementById('price-modal');
+      const title = document.getElementById('price-modal-title');
+      const editIdInput = document.getElementById('price-edit-id');
+
+      if (editItem) {
+        title.textContent = 'Edit Item Price';
+        editIdInput.value = editItem.id;
+        document.getElementById('price-modal-item-name').value = editItem.itemName;
+        document.getElementById('price-modal-price').value = editItem.price;
+        document.getElementById('price-modal-unit').value = editItem.unit;
+        document.getElementById('price-modal-shop-name').value = editItem.shopName || '';
+        document.getElementById('price-modal-notes').value = editItem.notes || '';
+        const radio = document.querySelector(`input[name="price_modal_cat"][value="${editItem.categoryId}"]`);
+        if (radio) radio.checked = true;
+      } else {
+        title.textContent = 'Record Item Price';
+        editIdInput.value = '';
+        document.getElementById('price-record-form').reset();
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      setTimeout(() => document.getElementById('price-modal-item-name').focus(), 100);
+      lucide.createIcons();
+    }
+
+    function editPriceModal(priceId) {
+      const item = priceCatalog.find(p => p.id === priceId);
+      if (item) openPriceModal(item);
+    }
+
+    function closePriceModal() {
+      const modal = document.getElementById('price-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function renderPriceModalCategories() {
+      const container = document.getElementById('price-modal-category-radios');
+      container.innerHTML = categories.map((cat, idx) => `
+        <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 hover:border-brand-500 cursor-pointer transition bg-slate-50/50 has-[:checked]:bg-brand-50 has-[:checked]:border-brand-500 has-[:checked]:text-brand-800">
+          <input type="radio" name="price_modal_cat" value="${cat.id}" ${idx === 0 ? 'checked' : ''} class="text-brand-600 focus:ring-brand-500">
+          <span class="text-base">${cat.emoji}</span>
+          <span class="font-medium truncate">${cat.name}</span>
+        </label>
+      `).join('');
+    }
+
+    function handlePriceSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('price-edit-id').value;
+      const name = document.getElementById('price-modal-item-name').value.trim();
+      const priceVal = parseFloat(document.getElementById('price-modal-price').value) || 0;
+      const unit = document.getElementById('price-modal-unit').value;
+      const catRadio = document.querySelector('input[name="price_modal_cat"]:checked');
+      const categoryId = catRadio ? Number(catRadio.value) : 1;
+      const shopName = document.getElementById('price-modal-shop-name').value.trim();
+      const notes = document.getElementById('price-modal-notes').value.trim();
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!name || priceVal <= 0) return;
+
+      if (editId) {
+        // Edit existing
+        const existing = priceCatalog.find(p => p.id === Number(editId));
+        if (existing) {
+          existing.itemName = name;
+          existing.price = priceVal;
+          existing.unit = unit;
+          existing.categoryId = categoryId;
+          existing.shopName = shopName;
+          existing.notes = notes;
+          existing.updatedAt = today;
         }
-      } catch (err) {
-        // Backend not running, which is completely fine, running locally!
+      } else {
+        // Create new
+        const newRecord = {
+          id: Date.now(),
+          itemName: name,
+          categoryId: categoryId,
+          price: priceVal,
+          unit: unit,
+          shopName: shopName,
+          notes: notes,
+          updatedAt: today
+        };
+        priceCatalog.unshift(newRecord);
+      }
+
+      saveState();
+      closePriceModal();
+      renderPriceCatalog();
+      updateBadges();
+    }
+
+    function deletePriceItem(priceId) {
+      if (!confirm('Delete this price record?')) return;
+      priceCatalog = priceCatalog.filter(p => p.id !== priceId);
+      saveState();
+      renderPriceCatalog();
+      updateBadges();
+    }
+
+    // --- AUTOLOOKUP PRICE WHEN ADDING TO SHOPPING LIST ---
+    function checkPriceCatalogForAutofill(typedName) {
+      const hint = document.getElementById('price-lookup-hint');
+      const priceInput = document.getElementById('modal-price');
+      const unitInput = document.getElementById('modal-unit');
+      if (!typedName || typedName.trim().length < 2) {
+        hint.classList.add('hidden');
+        return;
+      }
+
+      const match = priceCatalog.find(p => p.itemName.toLowerCase() === typedName.trim().toLowerCase());
+      if (match) {
+        priceInput.value = match.price;
+        unitInput.value = match.unit;
+        hint.classList.remove('hidden');
+        // Match category if found
+        const radio = document.querySelector(`input[name="modal_cat"][value="${match.categoryId}"]`);
+        if (radio) radio.checked = true;
+      } else {
+        hint.classList.add('hidden');
       }
     }
 
-    // --- UI RENDERING ---
+    // --- SHOPPING LIST LOGIC ---
     function renderCategoryChips() {
       const container = document.getElementById('category-chips-list');
       container.innerHTML = categories.map(cat => {
@@ -361,7 +904,6 @@
         `;
       }).join('');
 
-      // Update "All" chip
       const allBtn = document.getElementById('cat-chip-all');
       if (selectedCategoryId === null) {
         allBtn.className = 'whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white shadow-sm flex items-center gap-1.5 transition';
@@ -387,7 +929,6 @@
       const emptyState = document.getElementById('empty-state');
       const bottomClearBar = document.getElementById('bottom-clear-bar');
 
-      // Filter items by category & search query
       let filtered = items;
       if (selectedCategoryId !== null) {
         filtered = filtered.filter(i => i.categoryId === selectedCategoryId);
@@ -397,7 +938,6 @@
         filtered = filtered.filter(i => i.itemName.toLowerCase().includes(q) || (i.notes && i.notes.toLowerCase().includes(q)));
       }
 
-      // Calculate progress stats
       const totalCount = items.length;
       const purchasedCount = items.filter(i => i.status === 'PURCHASED').length;
       const percent = totalCount > 0 ? Math.round((purchasedCount / totalCount) * 100) : 0;
@@ -423,14 +963,12 @@
 
       emptyState.classList.add('hidden');
 
-      // Group filtered items by category
       const grouped = {};
       filtered.forEach(item => {
         if (!grouped[item.categoryId]) grouped[item.categoryId] = [];
         grouped[item.categoryId].push(item);
       });
 
-      // Build HTML by category groups
       let html = '';
       categories.forEach(cat => {
         const catItems = grouped[cat.id];
@@ -441,7 +979,6 @@
 
         html += `
           <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden transition-all duration-200 ${allDoneInCat ? 'opacity-70 bg-slate-50/50' : ''}">
-            <!-- Category Group Header -->
             <div class="px-4 py-3 bg-gradient-to-r from-slate-50 to-white border-b border-slate-100 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="text-xl">${cat.emoji}</span>
@@ -453,13 +990,11 @@
               <span class="text-xs text-slate-400 font-medium">${catItems.length} items</span>
             </div>
 
-            <!-- Items List -->
             <div class="divide-y divide-slate-100">
               ${catItems.map(item => {
                 const isPurchased = item.status === 'PURCHASED';
                 return `
                   <div class="flex items-center justify-between p-3.5 sm:px-4 hover:bg-slate-50/80 transition-colors ${isPurchased ? 'bg-emerald-50/30' : ''}">
-                    <!-- Left: Checkbox & Item details -->
                     <div class="flex items-center gap-3.5 flex-1 min-w-0 mr-2">
                       <button 
                         onclick="toggleItemStatus(${item.id})" 
@@ -493,7 +1028,6 @@
                       </div>
                     </div>
 
-                    <!-- Right: Delete action -->
                     <button 
                       onclick="deleteItem(${item.id})" 
                       title="Delete item" 
@@ -509,6 +1043,7 @@
       });
 
       listContainer.innerHTML = html;
+      updateBadges();
       lucide.createIcons();
     }
 
@@ -517,7 +1052,6 @@
       return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    // --- ACTIONS ---
     function selectCategoryFilter(catId) {
       selectedCategoryId = catId;
       renderList();
@@ -535,7 +1069,6 @@
       saveState();
       renderList();
 
-      // Fire async call to Spring Boot API in background
       fetch(`${backendUrl}/shopping-lists/items/${itemId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -583,9 +1116,11 @@
     function openAddItemModal() {
       renderModalCategories();
       const modal = document.getElementById('add-modal');
+      document.getElementById('price-lookup-hint').classList.add('hidden');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       setTimeout(() => document.getElementById('modal-item-name').focus(), 100);
+      lucide.createIcons();
     }
 
     function closeAddItemModal() {
@@ -618,12 +1153,28 @@
       };
 
       items.unshift(newItem);
+
+      // If item is not in price tracker, optionally save it for future reference!
+      const existingPrice = priceCatalog.find(p => p.itemName.toLowerCase() === name.toLowerCase());
+      if (!existingPrice && price > 0) {
+        priceCatalog.unshift({
+          id: Date.now() + 1,
+          itemName: name,
+          categoryId: categoryId,
+          price: price,
+          unit: unit,
+          shopName: 'Market',
+          notes: notes,
+          updatedAt: new Date().toISOString().split('T')[0]
+        });
+      }
+
       saveState();
       closeAddItemModal();
       document.getElementById('add-item-form').reset();
       renderList();
+      updateBadges();
 
-      // Post to Spring Boot / backend API
       fetch(`${backendUrl}/shopping-lists/1/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -638,16 +1189,20 @@
       }).catch(() => {});
     }
 
-    // Close modal on background click
+    // Close modals on backdrop click
     document.getElementById('add-modal').addEventListener('click', (e) => {
       if (e.target.id === 'add-modal') closeAddItemModal();
+    });
+    document.getElementById('price-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'price-modal') closePriceModal();
     });
 
     // --- INITIALIZE ---
     window.addEventListener('DOMContentLoaded', () => {
       loadState();
       renderList();
-      trySyncWithBackend();
+      renderPriceCatalog();
+      updateBadges();
     });
   </script>
 </body>

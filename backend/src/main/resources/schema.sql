@@ -61,3 +61,15 @@ CREATE TABLE IF NOT EXISTS inventory_transactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS item_prices (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    item_name VARCHAR(150) NOT NULL,
+    category_id BIGINT,
+    price DOUBLE NOT NULL,
+    unit VARCHAR(50) DEFAULT 'kg',
+    shop_name VARCHAR(150),
+    notes TEXT,
+    updated_at DATE DEFAULT (CURRENT_DATE),
+    FOREIGN KEY (category_id) REFERENCES shop_categories(id) ON DELETE SET NULL
+);

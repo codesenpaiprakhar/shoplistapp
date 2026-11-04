@@ -37,3 +37,18 @@ INSERT IGNORE INTO shopping_list_items (id, list_id, item_id, item_name, categor
 (5, 1, 7, 'Basmati Rice', 3, 5.0, 'kg', 'PENDING', 450.0, 'Standard royal brand'),
 (6, 1, 11, 'Bananas', 4, 1.0, 'dozen', 'PENDING', 60.0, 'Slightly yellow/green'),
 (7, 1, 13, 'Whole Wheat Bread', 5, 1.0, 'packet', 'PENDING', 45.0, 'Check manufacturing date');
+
+-- Starter Item Price Catalog Records
+INSERT IGNORE INTO item_prices (id, item_name, category_id, price, unit, shop_name, notes, updated_at) VALUES
+(1, 'Fresh Tomatoes', 1, 30.0, 'kg', 'Mandi Stall #4', 'Best price on Sunday', CURRENT_DATE),
+(2, 'Onions', 1, 30.0, 'kg', 'Vegetable Corner', 'Wholesale 5kg bag', CURRENT_DATE),
+(3, 'Potatoes', 1, 25.0, 'kg', 'Mandi Stall #4', 'Pahari variety', CURRENT_DATE),
+(4, 'Spinach (Palak)', 1, 25.0, 'bunch', 'Local Vendor', 'Fresh greens', CURRENT_DATE),
+(5, 'Full Cream Milk', 2, 65.0, 'litre', 'Mother Dairy', 'Packet price', CURRENT_DATE),
+(6, 'Fresh Paneer', 2, 400.0, 'kg', 'Dairy Booth', 'Loose fresh', CURRENT_DATE),
+(7, 'Basmati Rice', 3, 90.0, 'kg', 'Kirana Superstore', 'Royal Rozana', CURRENT_DATE),
+(8, 'Toor Dal', 3, 160.0, 'kg', 'Wholesale Kirana', 'Unpolished', CURRENT_DATE),
+(9, 'Sunflower Oil', 3, 140.0, 'litre', 'Grocery Store', 'Fortune pouch', CURRENT_DATE),
+(10, 'Bananas', 4, 60.0, 'dozen', 'Fruit Cart', 'Robusta', CURRENT_DATE),
+(11, 'Apples', 4, 180.0, 'kg', 'Fruit Stall', 'Kinnaur apples', CURRENT_DATE),
+(12, 'Whole Wheat Bread', 5, 45.0, 'packet', 'Corner Bakery', 'Standard 400g', CURRENT_DATE);
